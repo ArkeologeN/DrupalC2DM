@@ -1,0 +1,9 @@
+;$Id$
+
+name = C2DMServer
+description = Custom Cloud2DeviceManager Server for eIntelli onBoard Push Notification
+package = Cloud Administration
+core = 7.x
+
+files[] = heirachy/C2DMServer.php
+files[] = heirachy/C2DMRegister.php

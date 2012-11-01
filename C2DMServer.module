@@ -1,0 +1,130 @@
+<?php
+/**
+ * @author      Hamza Waqas ( Android / Hybrid )
+ * @access      Cloud Organization
+ * @copyright   http://www.plumtreegroup.net
+ * @link        www.site.com/administration
+ */
+
+
+/**
+ * Implementation of hook_help
+ */
+
+function C2DMServer_help($path,$arg) {
+    switch($path) {
+        case 'admin/help#C2DMServer':
+            $return = "Custom Cloud2DeviceManager Server for eIntelli onBoard Push Notification";
+            return $return;
+        break;
+    }
+}
+
+/**
+ *
+ * Implementation of hook_menu
+ * @return Array Menus
+ */
+function C2DMServer_menu() {
+    $items['c2dm/register'] = array(
+        'page callback' => '_C2DMServer_callback_register',
+        'access callback'   => user_access('administer C2DMServer'),
+        'type'  => MENU_CALLBACK
+    );
+    
+    $items['c2dm/unregister'] = array(
+        'page callback' => '_C2DMServer_callback_unregister',
+        'access callback'   => user_access('administer C2DMServer'),
+        'type'  => MENU_CALLBACK
+    );
+    
+    
+    return $items;
+}
+
+/***
+ * Implementation of hook_perm
+ */
+function C2DMServer_perm() {
+    return array(
+        'administer C2DMServer'
+    );
+}
+
+/**
+ *
+ * Implementation of hook_permission
+ * @return Array Permissions 
+ */
+function C2DMServer_permission() {
+    return array(
+        'administer C2DMServer' => array(
+          'title'   => t('Administration Cloud2Device Messaging System'),
+          'description' => t('Administrate & manage all the Cloud2Device Messaging System')
+        ),
+    );
+}
+
+/**
+ * Implements CALLBACK for /c2dm/register
+ * Registers the new device for push notification
+ */
+function _C2DMServer_callback_register() {
+    if ( isset($_REQUEST['signature'])) {
+        switch($_REQUEST['signature']) {
+            case 'Register':
+                try {
+                    $C2DMRegister = new C2DMRegister();
+                    $C2DMRegister->setDeviceName($_REQUEST['device_name']);
+                    $C2DMRegister->setAppId($_REQUEST['application']);
+                    $C2DMRegister->setDeviceId($_REQUEST['device_id']);
+                    $C2DMRegister->setRegistrationId($_REQUEST['registration_id']);
+                    $C2DMRegister->setLanguage($_REQUEST['language']);
+                    $C2DMRegister->setTimezone($_REQUEST['timezone']);
+                    $C2DMRegister->setIdentifier($_REQUEST['identifier']);
+                    $C2DMRegister->setOrgId($_REQUEST['orgid']);
+                    $C2DMRegister->digest();
+                    $C2DMRegister->Register();
+                    $C2DMRegister->mapSequence();
+                    $C2DM = new C2DMServer();
+                    $C2DM->setUsername("mygooglemail@gmail.com");
+                    $C2DM->setPassword("ihaveapublicpassword");
+                    $C2DM->getAuthToken();
+                    echo 'Sending';
+                    $C2DM->setMessage("Live Message From DrupalC2DM");
+                    $sender = $C2DM->sendMessage($C2DMRegister->getRegistrationId(), 1);
+                    
+                    /*
+                    // Notify After 2 minutes
+                    $timestamp = strtotime('+2 minute');
+                    time_sleep_until($timestamp);
+                    $C2DM->setMessage("AFter 2 minutes message. BY CHANGES");
+                    $C2DM->sendMessage($C2DMRegister->getRegistrationId(), 1);
+                    _send_message_on($timestamp, $C2DM); */
+                } catch(Exception $ex){
+                    print $ex->getMessage();
+                }
+                    //$mysqldate = date("m/d/y g:i A", $timestamp);
+                    //print $mysqldate;
+                break;
+            case 'Unregister':
+                break;
+            default:
+                break;
+        }
+    }
+    //echo 'function'; exit;
+}
+
+/**
+ * Implements CALLBACK for /c2dm/unregister
+ * Remove / Unregister existing device from recieving notifcation.
+ */
+function _C2DMServer_callback_unregister() {
+    
+}
+
+
+function _send_message_on($timestamp, $c2dm) {
+    
+}
